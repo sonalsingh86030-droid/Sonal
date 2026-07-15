@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sonar Translate</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sonar Translate">
+    <style>
+        :root { --bg-color: #0b0f19; --card-bg: #161d30; --primary: #2563eb; --primary-glow: rgba(37, 99, 235, 0.4); --danger: #ef4444; --danger-glow: rgba(239, 68, 68, 0.4); --text-main: #f3f4f6; --text-muted: #9ca3af; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; justify-content: space-between; min-height: 100vh; padding: 20px; align-items: center; }
+        .app-container { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 20px; flex-grow: 1; justify-content: center; }
+        header { text-align: center; }
+        h1 { font-size: 1.8rem; font-weight: 700; color: #fff; }
+        h1 span { color: var(--primary); }
+        .lang-toggle-container { display: flex; background: var(--card-bg); padding: 6px; border-radius: 14px; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
+        .lang-btn { flex: 1; padding: 12px; text-align: center; font-size: 0.95rem; font-weight: 600; z-index: 2; transition: color 0.3s ease; color: var(--text-muted); }
+        .lang-btn.active { color: #fff; }
+        .toggle-slide { position: absolute; top: 6px; bottom: 6px; left: 6px; width: calc(50% - 6px); background: var(--primary); border-radius: 10px; z-index: 1; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 12px var(--primary-glow); }
+        .lang-toggle-container.hindi-active .toggle-slide { transform: translateX(100%); }
+        .output-box { background: var(--card-bg); border-radius: 18px; padding: 20px; min-height: 220px; max-height: 350px; overflow-y: auto; font-size: 1.15rem; line-height: 1.6; border: 1px solid rgba(255,255,255,0.05); }
+        .output-box:empty::before { content: "आपका बोला हुआ टेक्स्ट यहाँ दिखाई देगा..."; color: var(--text-muted); font-style: italic; font-size: 1rem; }
+        .interim { color: var(--text-muted); opacity: 0.75; }
+        .action-bar { display: flex; gap: 12px; }
+        .action-btn { flex: 1; background: var(--card-bg); color: var(--text-main); border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .mic-container { display: flex; justify-content: center; }
+        .mic-btn { width: 85px; height: 85px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px var(--primary-glow); }
+        .mic-btn svg { width: 32px; height: 32px; fill: #fff; }
+        .mic-btn.listening { background: var(--danger); box-shadow: 0 0 30px var(--danger-glow); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .pwa-prompt { background: var(--card-bg); border: 1px solid var(--primary); border-radius: 16px; padding: 16px; width: 100%; max-width: 450px; margin-top: 15px; font-size: 0.9rem; display: none; }
+        .pwa-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 8px; }
+        .pwa-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+        .pwa-icon-hint { display: inline-block; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Sonar <span>Translate</span></h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">लाइव स्पीच-टू-टेक्स्ट</p>
+        </header>
+        <div class="lang-toggle-container" id="langToggle">
+            <div class="toggle-slide"></div>
+            <div class="lang-btn active" id="btnEng">English (India)</div>
+            <div class="lang-btn" id="btnHin">हिंदी (भारत)</div>
+        </div>
+        <div class="output-box" id="output"></div>
+        <div class="mic-container">
+            <button class="mic-btn" id="micBtn">
+                <svg id="micIcon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+            </button>
+        </div>
+        <div class="action-bar">
+            <button class="action-btn" id="copyBtn">📋 कॉपी टेक्स्ट</button>
+            <button class="action-btn" id="clearBtn">🗑️ साफ़ करें</button>
+        </div>
+    </div>
+    <div class="pwa-prompt" id="pwaPrompt">
+        <div class="pwa-header"><span>📲 सोनर ट्रांसलेट को ऐप बनाएं!</span><button class="pwa-close" id="pwaClose">&times;</button></div>
+        <div id="pwaStepsText" style="color: var(--text-muted);">Safari के नीचे शेयर आइकॉन <span class="pwa-icon-hint">⎋</span> पर टैप करें, फिर <b>"Add to Home Screen"</b> चुनें।</div>
+    </div>
+    <script>
+        const langToggle = document.getElementById('langToggle');
+        const btnEng = document.getElementById('btnEng'); const btnHin = document.getElementById('btnHin');
+        const output = document.getElementById('output'); const micBtn = document.getElementById('micBtn');
+        const copyBtn = document.getElementById('copyBtn'); const clearBtn = document.getElementById('clearBtn');
+        const pwaPrompt = document.getElementById('pwaPrompt'); const pwaClose = document.getElementById('pwaClose');
+        let currentLang = 'en-IN'; let isListening = false; let finalTranscript = ''; let recognition = null;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = currentLang;
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) { finalTranscript += event.results[i][0].transcript + ' '; } 
+                    else { interimTranscript += event.results[i][0].transcript; }
+                }
+                output.innerHTML = finalTranscript + '<span class="interim">' + interimTranscript + '</span>';
+                output.scrollTop = output.scrollHeight;
+            };
+            recognition.onend = () => { if (isListening) recognition.start(); };
+        } else { output.innerHTML = "<p style='color:var(--danger); text-align:center;'>Speech not supported. Use Chrome/Safari.</p>"; }
+        langToggle.addEventListener('click', () => {
+            if (isListening) stopListening();
+            if (currentLang === 'en-IN') { currentLang = 'hi-IN'; langToggle.classList.add('hindi-active'); } 
+            else { currentLang = 'en-IN'; langToggle.classList.remove('hindi-active'); }
+            if (recognition) recognition.lang = currentLang;
+        });
+        function startListening() { isListening = true; micBtn.classList.add('listening'); recognition.start(); }
+        function stopListening() { isListening = false; micBtn.classList.remove('listening'); recognition.stop(); }
+        micBtn.addEventListener('click', () => { if (isListening) stopListening(); else startListening(); });
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(output.innerText.trim()).then(() => {
+                copyBtn.innerText = "✓ कॉपी हो गया!"; setTimeout(() => copyBtn.innerText = "📋 कॉपी टेक्स्ट", 2000);
+            });
+        });
+        clearBtn.addEventListener('click', () => { finalTranscript = ''; output.innerHTML = ''; });
+        if (!window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+            pwaPrompt.style.display = 'block';
+            if (!/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                document.getElementById('pwaStepsText').innerHTML = "ऊपर कोने में <b>3 डॉट्स (Menu)</b> पर क्लिक करके <b>\"Add to Home screen\"</b> चुनें।";
+            }
+        }
+        pwaClose.addEventListener('click', () => pwaPrompt.style.display = 'none');
+    </script>
+</body>
+</html>
