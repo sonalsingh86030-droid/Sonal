@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Speech-to-Text</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Ultra-lightweight Live Speech-to-Text transcriber. Hindi & English (India) support. Zero friction, instant transcription.">
+    <title>Live Speech-to-Text | Instant Transcriber</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
@@ -18,23 +26,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 16px;
+            overflow-x: hidden;
         }
 
         .container {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 30px 25px;
-            max-width: 500px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            padding: 32px 24px;
+            max-width: 480px;
             width: 100%;
-            animation: slideUp 0.5s ease-out;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(24px);
             }
             to {
                 opacity: 1;
@@ -44,264 +53,285 @@
 
         h1 {
             text-align: center;
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 25px;
-            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 28px;
+            margin-bottom: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
         .language-toggle {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            background: #f5f5f5;
-            padding: 8px;
-            border-radius: 12px;
+            gap: 8px;
+            margin-bottom: 28px;
+            background: #f8f9fa;
+            padding: 6px;
+            border-radius: 14px;
         }
 
         .lang-btn {
             flex: 1;
-            padding: 12px 16px;
-            border: none;
+            padding: 12px 14px;
+            border: 2px solid transparent;
             background: transparent;
             color: #666;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             text-align: center;
+            touch-action: manipulation;
         }
 
         .lang-btn.active {
             background: white;
             color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
 
         .lang-btn:hover {
             color: #667eea;
+            border-color: #667eea;
+        }
+
+        .lang-btn:active {
+            transform: scale(0.98);
         }
 
         .status {
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             color: #999;
-            margin-bottom: 25px;
-            height: 20px;
-            min-height: 20px;
+            margin-bottom: 24px;
+            height: 24px;
+            min-height: 24px;
+            line-height: 24px;
         }
 
         .status.listening {
             color: #667eea;
-            font-weight: 600;
-            animation: pulse 1s infinite;
+            font-weight: 700;
+            font-size: 13px;
+            animation: pulse 1.2s ease-in-out infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .mic-button-container {
             display: flex;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
         .mic-btn {
-            width: 140px;
-            height: 140px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
-            border: 4px solid #667eea;
+            border: 5px solid #667eea;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 17px;
+            font-weight: 800;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.35);
             text-align: center;
-            padding: 20px;
-            line-height: 1.3;
+            padding: 18px;
+            line-height: 1.4;
+            touch-action: manipulation;
         }
 
-        .mic-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        .mic-btn:hover:not(.recording) {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 48px rgba(102, 126, 234, 0.45);
         }
 
-        .mic-btn:active {
+        .mic-btn:active:not(.recording) {
             transform: translateY(-2px);
         }
 
         .mic-btn.recording {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             border-color: #f5576c;
-            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.3);
-            animation: recordingPulse 1.5s infinite;
+            box-shadow: 0 12px 32px rgba(245, 87, 108, 0.45), inset 0 0 24px rgba(255, 255, 255, 0.25);
+            animation: recordingPulse 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
         }
 
         @keyframes recordingPulse {
             0%, 100% {
-                box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.3);
+                box-shadow: 0 12px 32px rgba(245, 87, 108, 0.45), inset 0 0 24px rgba(255, 255, 255, 0.25);
             }
             50% {
-                box-shadow: 0 10px 40px rgba(245, 87, 108, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.4);
+                box-shadow: 0 12px 48px rgba(245, 87, 108, 0.6), inset 0 0 36px rgba(255, 255, 255, 0.35);
             }
         }
 
         .text-area {
             width: 100%;
-            min-height: 150px;
-            max-height: 200px;
+            min-height: 160px;
+            max-height: 220px;
             padding: 16px;
-            border: 2px solid #e5e5e5;
-            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 14px;
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.65;
             resize: vertical;
             font-family: inherit;
-            color: #333;
-            transition: border-color 0.3s ease;
+            color: #222;
+            transition: all 0.25s ease;
             margin-bottom: 16px;
+            background: #fafbfc;
         }
 
         .text-area:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
         }
 
         .button-group {
             display: flex;
             gap: 12px;
-            margin-bottom: 10px;
         }
 
         .btn {
             flex: 1;
             padding: 14px;
-            border: none;
-            border-radius: 10px;
+            border: 2px solid transparent;
+            border-radius: 12px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             text-align: center;
+            touch-action: manipulation;
         }
 
         .btn-copy {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
-        .btn-copy:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        .btn-copy:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
         }
 
-        .btn-copy:active {
-            transform: translateY(0);
+        .btn-copy:active:not(:disabled) {
+            transform: translateY(-1px);
         }
 
         .btn-clear {
-            background: #f5f5f5;
+            background: #f3f4f6;
             color: #666;
+            border-color: #e5e7eb;
         }
 
-        .btn-clear:hover {
-            background: #efefef;
-            transform: translateY(-2px);
+        .btn-clear:hover:not(:disabled) {
+            background: #e5e7eb;
+            color: #333;
+            transform: translateY(-3px);
         }
 
-        .btn-clear:active {
-            transform: translateY(0);
+        .btn-clear:active:not(:disabled) {
+            transform: translateY(-1px);
         }
 
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.45;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
         }
 
         .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            padding: 14px;
+            border-radius: 12px;
             font-size: 13px;
+            font-weight: 600;
             margin-bottom: 16px;
             display: none;
             border-left: 4px solid #f5576c;
+            animation: slideDown 0.3s ease;
         }
 
         .error-message.show {
             display: block;
-            animation: slideDown 0.3s ease;
         }
 
         @keyframes slideDown {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(-8px);
+                max-height: 0;
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
+                max-height: 200px;
             }
         }
 
         .copy-feedback {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #667eea;
+            bottom: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
+            transform: translateY(32px) scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
             z-index: 1000;
+            box-shadow: 0 10px 32px rgba(102, 126, 234, 0.3);
         }
 
         .copy-feedback.show {
             opacity: 1;
-            transform: translateY(0);
-        }
-
-        .interim-text {
-            color: #999;
-            font-style: italic;
+            transform: translateY(0) scale(1);
         }
 
         @media (max-width: 480px) {
             .container {
-                padding: 20px 18px;
-                border-radius: 16px;
+                padding: 24px 18px;
+                border-radius: 20px;
             }
 
             h1 {
-                font-size: 20px;
-                margin-bottom: 20px;
+                font-size: 24px;
+                margin-bottom: 24px;
             }
 
             .mic-btn {
-                width: 120px;
-                height: 120px;
-                font-size: 16px;
+                width: 130px;
+                height: 130px;
+                font-size: 15px;
+                border: 4px solid #667eea;
             }
 
             .text-area {
-                min-height: 120px;
+                min-height: 140px;
                 font-size: 15px;
                 padding: 14px;
             }
@@ -311,8 +341,77 @@
                 font-size: 13px;
             }
 
+            .copy-feedback {
+                bottom: 16px;
+                right: 16px;
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
             body {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #4c1d95 0%, #2d1b69 100%);
+            }
+
+            .container {
+                background: #1f2937;
+            }
+
+            h1 {
+                color: #e0e7ff;
+            }
+
+            .lang-btn {
+                color: #9ca3af;
+            }
+
+            .lang-btn.active {
+                background: #374151;
+                color: #a78bfa;
+                border-color: #a78bfa;
+            }
+
+            .status,
+            .status.listening {
+                color: #d1d5db;
+            }
+
+            .text-area {
+                background: #111827;
+                border-color: #374151;
+                color: #f3f4f6;
+            }
+
+            .text-area:focus {
+                background: #1f2937;
+                border-color: #a78bfa;
+                box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+            }
+
+            .btn-clear {
+                background: #374151;
+                color: #d1d5db;
+                border-color: #4b5563;
+            }
+
+            .btn-clear:hover:not(:disabled) {
+                background: #4b5563;
+                color: #f3f4f6;
+            }
+
+            .error-message {
+                background: #7f1d1d;
+                color: #fee2e2;
+                border-color: #dc2626;
             }
         }
     </style>
@@ -322,218 +421,242 @@
         <h1>🎤 Live Speech</h1>
 
         <div class="language-toggle">
-            <button class="lang-btn active" data-lang="en-IN">
-                English - India
+            <button class="lang-btn active" data-lang="en-IN" aria-label="Switch to English - India">
+                English
             </button>
-            <button class="lang-btn" data-lang="hi-IN">
+            <button class="lang-btn" data-lang="hi-IN" aria-label="हिंदी में स्विच करें">
                 हिंदी
             </button>
         </div>
 
-        <div class="status" id="status"></div>
-        <div class="error-message" id="errorMsg"></div>
+        <div class="status" id="status" aria-live="polite"></div>
+        <div class="error-message" id="errorMsg" aria-live="assertive"></div>
 
         <div class="mic-button-container">
-            <button class="mic-btn" id="micBtn" title="Tap to start speaking">
+            <button class="mic-btn" id="micBtn" title="Tap to start speaking" aria-pressed="false">
                 🎤 TAP TO<br>SPEAK
             </button>
         </div>
 
-        <textarea class="text-area" id="textArea" placeholder="Your transcribed text will appear here..." readonly></textarea>
+        <textarea class="text-area" id="textArea" placeholder="Your transcribed text will appear here..." readonly aria-label="Transcribed text"></textarea>
 
         <div class="button-group">
-            <button class="btn btn-copy" id="copyBtn">📋 Copy</button>
-            <button class="btn btn-clear" id="clearBtn">🗑️ Clear</button>
+            <button class="btn btn-copy" id="copyBtn" aria-label="Copy text to clipboard">📋 Copy</button>
+            <button class="btn btn-clear" id="clearBtn" aria-label="Clear all text">🗑️ Clear</button>
         </div>
     </div>
 
-    <div class="copy-feedback" id="copyFeedback">✓ Copied to clipboard!</div>
+    <div class="copy-feedback" id="copyFeedback" role="status">✓ Copied!</div>
 
     <script>
-        // Configuration
-        const CONFIG = {
-            langs: {
-                'en-IN': 'English - India',
-                'hi-IN': 'हिंदी'
-            }
+        // State Management
+        const state = {
+            currentLang: 'en-IN',
+            isListening: false,
+            recognition: null,
+            interimTranscript: '',
+            finalTranscript: ''
         };
 
-        // State
-        let currentLang = 'en-IN';
-        let isListening = false;
-        let recognition = null;
-        let interimTranscript = '';
-        let finalTranscript = '';
+        // DOM Elements
+        const elements = {
+            micBtn: document.getElementById('micBtn'),
+            copyBtn: document.getElementById('copyBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            textArea: document.getElementById('textArea'),
+            status: document.getElementById('status'),
+            errorMsg: document.getElementById('errorMsg'),
+            copyFeedback: document.getElementById('copyFeedback')
+        };
 
-        // Initialize Speech Recognition API
+        /**
+         * Initialize Speech Recognition API
+         */
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
+
             if (!SpeechRecognition) {
                 showError('Web Speech API not supported in this browser.');
                 return false;
             }
 
-            recognition = new SpeechRecognition();
-            
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = currentLang;
-            recognition.maxAlternatives = 1;
+            state.recognition = new SpeechRecognition();
 
-            recognition.onstart = () => {
-                isListening = true;
+            state.recognition.continuous = true;
+            state.recognition.interimResults = true;
+            state.recognition.lang = state.currentLang;
+            state.recognition.maxAlternatives = 1;
+
+            state.recognition.onstart = () => {
+                state.isListening = true;
                 updateUI();
-                document.getElementById('status').textContent = 'Listening...';
-                document.getElementById('status').classList.add('listening');
+                elements.status.textContent = '🎙️ Listening...';
+                elements.status.classList.add('listening');
+                elements.micBtn.setAttribute('aria-pressed', 'true');
             };
 
-            recognition.onresult = (event) => {
-                interimTranscript = '';
+            state.recognition.onresult = (event) => {
+                state.interimTranscript = '';
 
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
 
                     if (event.results[i].isFinal) {
-                        finalTranscript += transcript + ' ';
+                        state.finalTranscript += transcript + ' ';
                     } else {
-                        interimTranscript += transcript;
+                        state.interimTranscript += transcript;
                     }
                 }
 
                 updateTextArea();
             };
 
-            recognition.onerror = (event) => {
-                let errorMsg = 'Error occurred in recognition: ' + event.error;
-                
-                if (event.error === 'network') {
-                    errorMsg = 'Network error. Check your internet connection.';
-                } else if (event.error === 'no-speech') {
-                    errorMsg = 'No speech detected. Please try again.';
-                } else if (event.error === 'audio-capture') {
-                    errorMsg = 'No microphone found. Please check your device.';
-                } else if (event.error === 'not-allowed') {
-                    errorMsg = 'Microphone access was denied. Please allow access.';
-                }
-
-                showError(errorMsg);
-                stopListening();
+            state.recognition.onerror = (event) => {
+                handleRecognitionError(event);
             };
 
-            recognition.onend = () => {
-                isListening = false;
+            state.recognition.onend = () => {
+                state.isListening = false;
                 updateUI();
-                document.getElementById('status').textContent = '';
-                document.getElementById('status').classList.remove('listening');
+                elements.status.textContent = '';
+                elements.status.classList.remove('listening');
+                elements.micBtn.setAttribute('aria-pressed', 'false');
             };
 
             return true;
         }
 
-        // Update text area with interim and final transcripts
-        function updateTextArea() {
-            const textArea = document.getElementById('textArea');
-            const displayText = finalTranscript + '<span class="interim-text">' + interimTranscript + '</span>';
-            textArea.innerHTML = finalTranscript + interimTranscript;
-            textArea.scrollTop = textArea.scrollHeight;
+        /**
+         * Handle speech recognition errors
+         */
+        function handleRecognitionError(event) {
+            const errorMessages = {
+                'network': 'Network error. Check your internet connection.',
+                'no-speech': 'No speech detected. Please try again.',
+                'audio-capture': 'No microphone found. Please check your device.',
+                'not-allowed': 'Microphone access denied. Please allow access in settings.'
+            };
+
+            const errorMsg = errorMessages[event.error] || `Error: ${event.error}`;
+            showError(errorMsg);
+            stopListening();
         }
 
-        // Update UI based on listening state
-        function updateUI() {
-            const micBtn = document.getElementById('micBtn');
-            const copyBtn = document.getElementById('copyBtn');
-            const clearBtn = document.getElementById('clearBtn');
+        /**
+         * Update text area with transcripts
+         */
+        function updateTextArea() {
+            elements.textArea.value = state.finalTranscript + state.interimTranscript;
+            elements.textArea.scrollTop = elements.textArea.scrollHeight;
+        }
 
-            if (isListening) {
-                micBtn.classList.add('recording');
-                micBtn.innerHTML = '🔴 LISTENING...';
-                copyBtn.disabled = true;
-                clearBtn.disabled = true;
+        /**
+         * Update UI based on listening state
+         */
+        function updateUI() {
+            const isDisabled = state.isListening;
+
+            if (isDisabled) {
+                elements.micBtn.classList.add('recording');
+                elements.micBtn.innerHTML = '🔴 LISTENING...';
+                elements.copyBtn.disabled = true;
+                elements.clearBtn.disabled = true;
             } else {
-                micBtn.classList.remove('recording');
-                micBtn.innerHTML = '🎤 TAP TO<br>SPEAK';
-                copyBtn.disabled = false;
-                clearBtn.disabled = false;
+                elements.micBtn.classList.remove('recording');
+                elements.micBtn.innerHTML = '🎤 TAP TO<br>SPEAK';
+                elements.copyBtn.disabled = false;
+                elements.clearBtn.disabled = false;
             }
         }
 
-        // Start/Stop listening
+        /**
+         * Toggle listening state
+         */
         function toggleListening() {
-            if (!recognition) {
+            if (!state.recognition) {
                 if (!initSpeechRecognition()) return;
             }
 
-            if (isListening) {
+            if (state.isListening) {
                 stopListening();
             } else {
                 startListening();
             }
         }
 
+        /**
+         * Start listening
+         */
         function startListening() {
-            interimTranscript = '';
-            recognition.lang = currentLang;
-            recognition.start();
+            state.interimTranscript = '';
+            state.recognition.lang = state.currentLang;
+            state.recognition.start();
         }
 
+        /**
+         * Stop listening
+         */
         function stopListening() {
-            recognition.stop();
+            state.recognition.stop();
         }
 
-        // Show error message
+        /**
+         * Show error message
+         */
         function showError(message) {
-            const errorMsg = document.getElementById('errorMsg');
-            errorMsg.textContent = message;
-            errorMsg.classList.add('show');
+            elements.errorMsg.textContent = message;
+            elements.errorMsg.classList.add('show');
 
             setTimeout(() => {
-                errorMsg.classList.remove('show');
+                elements.errorMsg.classList.remove('show');
             }, 5000);
         }
 
-        // Copy to clipboard
+        /**
+         * Copy text to clipboard
+         */
         function copyToClipboard() {
-            const textArea = document.getElementById('textArea');
-            const text = textArea.value;
+            const text = elements.textArea.value.trim();
 
-            if (!text.trim()) {
+            if (!text) {
                 showError('Nothing to copy!');
                 return;
             }
 
-            navigator.clipboard.writeText(text).then(() => {
-                showCopyFeedback();
-            }).catch(() => {
-                showError('Failed to copy. Please try again.');
-            });
+            navigator.clipboard.writeText(text)
+                .then(() => showCopyFeedback())
+                .catch(() => showError('Failed to copy. Please try again.'));
         }
 
-        // Show copy feedback
+        /**
+         * Show copy feedback
+         */
         function showCopyFeedback() {
-            const feedback = document.getElementById('copyFeedback');
-            feedback.classList.add('show');
-
+            elements.copyFeedback.classList.add('show');
             setTimeout(() => {
-                feedback.classList.remove('show');
+                elements.copyFeedback.classList.remove('show');
             }, 2000);
         }
 
-        // Clear text
+        /**
+         * Clear all text
+         */
         function clearText() {
-            if (isListening) {
+            if (state.isListening) {
                 stopListening();
             }
 
-            finalTranscript = '';
-            interimTranscript = '';
-            document.getElementById('textArea').value = '';
-            document.getElementById('errorMsg').classList.remove('show');
+            state.finalTranscript = '';
+            state.interimTranscript = '';
+            elements.textArea.value = '';
+            elements.errorMsg.classList.remove('show');
         }
 
-        // Change language
+        /**
+         * Change language
+         */
         function changeLanguage(lang) {
-            currentLang = lang;
+            state.currentLang = lang;
 
             // Update button states
             document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -541,24 +664,28 @@
             });
             event.target.classList.add('active');
 
-            // Stop current listening if active
-            if (isListening) {
+            // Restart listening if active
+            if (state.isListening) {
                 stopListening();
-                setTimeout(() => {
-                    startListening();
-                }, 500);
+                setTimeout(() => startListening(), 500);
             }
         }
 
-        // Event listeners
-        document.getElementById('micBtn').addEventListener('click', toggleListening);
-        document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
-        document.getElementById('clearBtn').addEventListener('click', clearText);
+        // Event Listeners
+        elements.micBtn.addEventListener('click', toggleListening);
+        elements.copyBtn.addEventListener('click', copyToClipboard);
+        elements.clearBtn.addEventListener('click', clearText);
 
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 changeLanguage(e.target.dataset.lang);
             });
+        });
+
+        // Prevent accidental text selection
+        document.addEventListener('selectstart', (e) => {
+            if (e.target === elements.textArea) return;
+            e.preventDefault();
         });
 
         // Initialize on load
